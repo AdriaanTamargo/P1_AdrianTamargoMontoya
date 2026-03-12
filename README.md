@@ -1,44 +1,26 @@
-# Práctica 1: Plataformas en Unity
+# Práctica 2: Continuación de Plataformas en Unity
 
-Este README explica cómo he planteado y resuelto los diferentes apartados de la práctica, tanto los obligatorios como los opcionales que he intentado implementar (digo intentado ya que uno no ha podido ser).
+En este documento explico cómo he planteado la práctica y la lógica que he utilizado en el código para que todo funcione de forma correcta y sin errores.
 
-## 1. Controlador del Jugador (PlayerController)
+## 1 — Sistema de monedas
 
-Para el script de movimiento del personaje, **he partido de la base desarrollada en clase**, adaptándola y ampliándola para cumplir con los requisitos de la práctica.
+* **Paso 1 - Crear la moneda:** He creado una moneda con un Collider con el Trigger activado y el script `Coleccionable.cs`. Para saber cuándo la cojo, uso la función `OnTriggerEnter` comprobando que sea el jugador el que choca (Viendo si tiene el código del PlayerController). Si es así, destruyo la moneda (Para que el jugador no la pueda farmear infinitamente). Suma la moneda, aprovecho la función `OnDestroy()`, de forma que le manda el aviso al GameManagerClase justo en el momento en que la moneda desaparece.
+* **Paso 2 - Crear el GameManagerClase:** He creado el script `GameManagerClase.cs`. Como necesitaba que mis puntos no se borraran al cambiar de pantalla, he usado la función `DontDestroyOnLoad` dentro del `Start()`, haciendo que este objeto sea "inmortal". Además, para no estar usando la función `Update()` preguntando todo el rato cuántas monedas tengo, he creado un Evento (`Action`). Básicamente, el GameManagerClase solo manda una "señal" cuando recojo una moneda de verdad.
+* **Paso 3 - Interfaz de monedas:** He puesto un Canvas con los textos. El script `UIUpdater.cs` lo único que hace es quedarse "escuchando" a que el GameManagerClase mande esa señal. En el `Start()`, el texto mira cuántas monedas hay para poner el número inicial, y a partir de ahí solo se actualiza cuando el GameManagerClase le avisa.
 
-### Planteamiento
-Ninguno propio como tal en el movimiento basico, ya que esto se hizo en clase.
+## 2 — Sistema de vidas
 
-### Apartados opcionales de la práctica
-He añadido varias funcionalidades extra al script base para mejorar la jugabilidad:
-* **Rotación Suave:** Añadí una interpolación (`Quaternion.Slerp`) para que el personaje se oriente suavemente hacia la dirección en la que camina, evitando giros bruscos.
-* **Sprint:** Detectando la tecla `Left Shift`. Esto alterna la velocidad de movimiento entre "caminar" y "correr".
-* **Doble Salto:** Añadi una variable que vea si se puede hacer un doble salto (`canDoubleJump`). Esto permite realizar el doble salto en el aire y solo podrás volver a hacer un salto normal o un doble salto si tocas el suelo (detectado por Tag).
-* **Animaciones:** Añadí un `Animator` para transicionar entre los estados de *Idle*, *Walk*, *Run* y *Jump*. Para realizar esto tuve que recurrir a videos de YouTube.
+* **Paso 1 - Añadir vidas al GameManagerClase:** He metido la variable de las vidas dentro de mi GameManagerClase y he creado otro evento como el de las monedas (Pero en vez de sumar, resta). Si las vidas llegan a 0, carga la pantalla de Game Over.
+* **Paso 2 - Crear objeto dañino:** He creado una trampa de pinchos con el script `DamageZone.cs`. Cuando detecta al jugador, hace dos cosas: le dice al GameManagerClase que reste una vida y llama directamente a la función de teletransportar al jugador al punto de partida.
+* **Paso 3 - UI de vidas:** He añadido el texto de los corazones al script de la interfaz para que también cambie solo cuando recibe el aviso de daño del GameManagerClase.
+* **Paso 4 - Respawn del jugador:** En mi `PlayerController.cs`, guardo mi posición inicial nada más empezar a jugar. Cuando la trampa me hace daño, la función `Respawn()` cambia mis coordenadas a esa posición guardada. Una cosa importante que he añadido en el código es la línea `rb.linearVelocity = Vector3.zero;` para poner la velocidad a cero, así evito que el personaje reaparezca con la inercia del movimiento realizado antes de hacer respawn.
 
----
+## 3 — Bucle de juego y escenas
 
-## 2. Plataforma Móvil (Tipo A)
+* **Paso 1 - Crear escena de menú principal:** En el menú principal he puesto un botón que utiliza mi script `SceneLoader.cs`. Para viajar entre escenas uso la función `SceneManager.LoadScene()` (Indicando a que escena quiero ir). Para arreglar el problema de que al volver a jugar se me guardaban las monedas de la partida anterior, he programado el botón para que limpie y ponga a cero los contadores del GameManagerClase un antes de cargar el nivel.
+* **Paso 2 - Crear la meta del nivel:** Al final del mapa he puesto un objeto invisible con un script `Goal.cs`. Si el jugador entra en su Trigger, limpia también los contadores y carga la pantalla de victoria.
+* **Paso 3 - Crear escena de victoria:** He montado la escena de victoria con botones de "Volver a Jugar" y "Menú". Lo bueno es que he podido reutilizar mi script de `SceneLoader.cs` arrastrándolo a estos botones, haciendo exactamente la misma función sin tener que repetir código (Pero debo indicar a que escena quiero viajar).
+* **Paso 4 - Build Settings:** Para que todo el código de los `SceneManager` funcionara bien y no me diera errores la consola, me he asegurado de registrar el Menú, el Nivel 1 y la Victoria en la ventana de Build Settings de Unity.
 
-En este segundo punto, **seguí directamente el desarrollo realizado paso a paso en clase**.
-
-### Funcionamiento
-El planteamiento es mover un objeto físico (en este caso una plataforma) entre una posición inicial y un destino marcado por un objeto auxiliar (un cubo llamado destino). El movimiento se realiza en el `FixedUpdate` utilizando `Vector3.MoveTowards`. Cuando la plataforma llega a un punto, se invierten los papeles, se cambia el destino para que la plataforma no se pare de mover.
-
-### Apartado opcionale de la práctica 
-* **Que el personaje se mantenga en la plataforma:** He intentado hacer este apartado usando `OnCollisionStay` para hacer hijo momentaneamente (`transform.parent`) al jugador con la plataforma. Sin embargo, **no he conseguido que funcione correctamente**: a pesar de tener el código implementado como vimos en clase el ultimo día (Para hacerlo por mi cuenta consulte la documentacion de Unity, viendo asi que funciones usar).
-
----
-
-## 3. Plataforma que Cae (Tipo B)
-
-Al principio, pensé que sería muy parecida a la plataforma móvil de clase pero en vertical. Sin embargo, al intentar hacerlo vi que habia que tener cosas en cuenta, como que detecte cuando la plataforma es pisada, que espere hasta caerse...
-
-### Planteamiento y Resolución
-Primero pense que habra que crear unas variables para que compruebe si esta plataforma esta cayendo o esta volviendo a su posicion inicial, y para ello cree (`estaCayendo`, `estaReseteando`):
-
-1.  **Detectar al Jugador y que la plataforma se caiga:** Uso `OnCollisionEnter` para detectar al jugador. Para que no se activase por abajo se me ocurrio comprobarlo por altura, ya que es lo que lo que marca la diferencia (que toque arriba o abajo de la plataforma). Añadí una condición para ver si el jugador está **por encima** de la plataforma para evitar que la plataforma se caiga si la tocas por el lateral o por abajo.
-2.  **Control de Tiempo:** Guardo el momento del impacto con `Time.time` (lo consulte en la documentación de Unity).
-3.  **Caída y Reinicio:**
-    * Uso `Vector3.MoveTowards` para bajar la plataforma a la posición final.
-    * Al llegar abajo, utilizo `Invoke` (consultado en la documentación) para que se espere un poco antes de volver a la posicion inicial.
+## 3 — Bucle de juego y escenas
+* Como opcionales añadidos simplemente he implementado una escena de Game Over que aparezca cuando el jugador se quede sin vidas. Usa la funcion LoadScene para viajar a la escena de GameOver. Ademas limpia los contadores de vida y de monedas.
