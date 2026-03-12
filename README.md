@@ -22,5 +22,5 @@ En este documento explico cómo he planteado la práctica y la lógica que he ut
 * **Paso 3 - Crear escena de victoria:** He montado la escena de victoria con botones de "Volver a Jugar" y "Menú". Lo bueno es que he podido reutilizar mi script de `SceneLoader.cs` arrastrándolo a estos botones, haciendo exactamente la misma función sin tener que repetir código (Pero debo indicar a que escena quiero viajar).
 * **Paso 4 - Build Settings:** Para que todo el código de los `SceneManager` funcionara bien y no me diera errores la consola, me he asegurado de registrar el Menú, el Nivel 1 y la Victoria en la ventana de Build Settings de Unity.
 
-## 3 — Bucle de juego y escenas
+## 4 — Escena Opcional de GameOver.
 * Como opcionales añadidos simplemente he implementado una escena de Game Over que aparezca cuando el jugador se quede sin vidas. Usa la funcion LoadScene para viajar a la escena de GameOver. Ademas limpia los contadores de vida y de monedas.
