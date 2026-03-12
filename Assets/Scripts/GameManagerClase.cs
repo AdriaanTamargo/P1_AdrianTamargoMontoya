@@ -12,7 +12,7 @@ public class GameManagerClase : MonoBehaviour
     public int monedas = 0;
     [SerializeField] public int lives = 3; 
 
-    private void Awake()
+    private void Start()
     {
         if (instancia == null)
         {
