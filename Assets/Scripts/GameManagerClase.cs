@@ -29,14 +29,22 @@ public class GameManagerClase : MonoBehaviour
     {
         monedas++;
         Debug.Log("Monedas: " + monedas);
-        OnMonedasChanged?.Invoke(monedas);
+        
+        if (OnMonedasChanged != null)
+        {
+            OnMonedasChanged(monedas);
+        }
     }
 
     public void LoseLife()
     {
         lives--;
         Debug.Log("Vidas restantes: " + lives);
-        OnVidasChanged?.Invoke(lives);
+        
+        if (OnVidasChanged != null)
+        {
+            OnVidasChanged(lives);
+        }
 
         if (lives <= 0)
         {
